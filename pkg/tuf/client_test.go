@@ -463,3 +463,32 @@ func (r *testRepo) SetTimestamp(date time.Time) {
 		r.t.Fatal(err)
 	}
 }
+
+func TestURLToPath(t *testing.T) {
+	tests := []struct {
+		name     string
+		url      string
+		expected string
+	}{
+		{
+			name:     "https on normal port",
+			url:      "https://github.github.com/prod-tuf-root",
+			expected: "github.github.com-prod-tuf-root",
+		},
+		{
+			name:     "http on nonstandard port",
+			url:      "http://127.0.0.1:35357",
+			expected: "http:--127.0.0.1:35357",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := URLToPath(test.url)
+			assert.Equal(t, got, test.expected)
+			td := t.TempDir()
+			dirPath := filepath.Join(td, got)
+			gotErr := os.Mkdir(dirPath, 0700)
+			assert.NoError(t, gotErr)
+		})
+	}
+}
